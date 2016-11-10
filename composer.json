@@ -1,0 +1,13 @@
+{
+    "name": "eduardoledo/server-sync-bundle",
+    "description": "A small Symfony3 bundle for syncing your project with different servers (dev, staging, prod) via rsync",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Eduardo Ledo",
+            "email": "eduardo.ledo@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
