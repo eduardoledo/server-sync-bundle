@@ -8,6 +8,11 @@
             "email": "eduardo.ledo@gmail.com"
         }
     ],
+    "autoload" : {
+        "psr-0" : {
+            "EduardoLedo\\ServerSyncBundle" : ""
+        }
+    },
     "minimum-stability": "dev",
     "require": {}
 }
