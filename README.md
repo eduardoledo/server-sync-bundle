@@ -23,8 +23,19 @@ public function registerBundles()
 
 ```yaml
 # app/config/config.yml
-eduardoledo_server_sync:
-    view:
-        view_response_listener: force
+eduardo_ledo_server_sync:
+    servers:
+        user: myuser                            # optional
+        password: mypassword                    # optional
+        host: host.example.com                  # required
+        destination_dir: /home/myuser/dest_dir  # required
+        exclude:                                # optional
+            - dir1
+            - dir2/*
+            - dir3/*.ext
+        exclude-from:                           # optional
+            - file1
+            - file2
+            - fileN
 ```
 ---
