@@ -13,6 +13,7 @@
             "EduardoLedo\\ServerSyncBundle" : ""
         }
     },
+    "target-dir": "EduardoLedo/ServerSyncBundle",
     "minimum-stability": "dev",
     "require": {}
 }
