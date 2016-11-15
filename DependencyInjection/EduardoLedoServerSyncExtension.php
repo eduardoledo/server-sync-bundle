@@ -14,6 +14,7 @@ use Symfony\Component\DependencyInjection\Loader;
  */
 class EduardoLedoServerSyncExtension extends Extension
 {
+
     /**
      * {@inheritdoc}
      */
@@ -22,7 +23,12 @@ class EduardoLedoServerSyncExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+        if (isset($config['servers'])) {
+            $container->setParameter("eduardoledo.server_sync.servers", $config['servers']);
+        }
+
+        $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.yml');
     }
+
 }

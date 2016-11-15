@@ -12,6 +12,7 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
  */
 class Configuration implements ConfigurationInterface
 {
+
     /**
      * {@inheritdoc}
      */
@@ -24,6 +25,25 @@ class Configuration implements ConfigurationInterface
         // configure your bundle. See the documentation linked above for
         // more information on that topic.
 
+        $rootNode
+                ->children()
+                    ->arrayNode("servers")
+                        ->useAttributeAsKey("name")
+                        ->prototype("array")
+                            ->children()
+                                ->scalarNode("user")->end()
+                                ->scalarNode("password")->end()
+                                ->scalarNode("host")->isRequired()->end()
+                                ->scalarNode("destination_dir")->isRequired()->end()
+                                ->arrayNode("exclude")
+                                    ->prototype("scalar")
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end();
+
         return $treeBuilder;
     }
+
 }
