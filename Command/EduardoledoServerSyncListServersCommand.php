@@ -19,14 +19,11 @@ class EduardoledoServerSyncListServersCommand extends ContainerAwareCommand
         $this
                 ->setName('eduardoledo:server-sync:list-servers')
                 ->setDescription('...')
-//                ->addArgument('argument', InputArgument::OPTIONAL, 'Argument description')
-//                ->addOption('option', null, InputOption::VALUE_NONE, 'Option description')
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $argument = $input->getArgument('argument');
         $servers = $this->getContainer()->getParameter("eduardoledo.server_sync.servers");
 
         if (count($servers) > 0) {
