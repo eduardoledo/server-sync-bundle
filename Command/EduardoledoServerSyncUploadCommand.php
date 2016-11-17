@@ -12,12 +12,15 @@ use Symfony\Component\Process\Process;
 class EduardoledoServerSyncUploadCommand extends ContainerAwareCommand
 {
 
+    protected $rsyncOptions = [];
+    protected $servers = [];
+    protected $optServers = [];
+
     protected function configure()
     {
         $this
                 ->setName('eduardoledo:server-sync:upload')
                 ->setDescription('sync files to selected servers')
-//            ->addArgument('argument', InputArgument::OPTIONAL, 'Argument description')
                 ->addOption('server', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Server name to sync')
                 ->addOption('exclude', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'rsync option')
                 ->addOption('exclude-from', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'rsync option')
@@ -25,27 +28,25 @@ class EduardoledoServerSyncUploadCommand extends ContainerAwareCommand
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function interact(InputInterface $input, OutputInterface $output)
     {
-        $rsyncOptions = [];
-
         if ($input->getOption("dry-run")) {
-            $rsyncOptions[] = "--dry-run";
+            $this->rsyncOptions[] = "--dry-run";
         }
 
         $exclude = $input->getOption("exclude");
-        array_walk($exclude, function($item) use (&$rsyncOptions) {
-            $rsyncOptions[] = "--exclude={$item}";
+        array_walk($exclude, function($item) {
+            $this->rsyncOptions[] = "--exclude={$item}";
         });
 
         $excludeFrom = $input->getOption("exclude-from");
-        array_walk($excludeFrom, function($item) use (&$rsyncOptions) {
-            $rsyncOptions[] = "--exclude-from={$item}";
+        array_walk($excludeFrom, function($item) {
+            $this->rsyncOptions[] = "--exclude-from={$item}";
         });
 
         // Get servers config
-        $servers = $this->getContainer()->getParameter("eduardoledo.server_sync.servers");
-        if (count($servers) == 0) {
+        $this->servers = $this->getContainer()->getParameter("eduardoledo.server_sync.servers");
+        if (count($this->servers) == 0) {
             $output->writeln([
                 "<error>                        </error>",
                 '<error> No servers configured. </error>',
@@ -54,8 +55,8 @@ class EduardoledoServerSyncUploadCommand extends ContainerAwareCommand
             exit(1);
         }
 
-        $optServers = $input->getOption('server');
-        if (count($optServers) == 0) {
+        $this->optServers = $input->getOption('server');
+        if (count($this->optServers) == 0) {
             $output->writeln([
                 "<error>                      </error>",
                 '<error> No servers selected. </error>',
@@ -64,7 +65,7 @@ class EduardoledoServerSyncUploadCommand extends ContainerAwareCommand
             exit(1);
         }
 
-        $invalidServers = array_diff($optServers, array_keys($servers));
+        $invalidServers = array_diff($this->optServers, array_keys($this->servers));
         if (count($invalidServers) > 0) {
             $s = implode(", ", $invalidServers);
             $message = "Invalid server(s): {$s}.";
@@ -93,13 +94,17 @@ class EduardoledoServerSyncUploadCommand extends ContainerAwareCommand
             ]);
             exit(1);
         }
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
         $output->writeln("Rsync found: <info>{$rsync}</info>", OutputInterface::VERBOSITY_DEBUG);
 
-        foreach ($optServers as $name) {
+        foreach ($this->optServers as $name) {
             $options = "";
-            $server = $servers[$name];
-            var_dump($server);
+            $server = $this->servers[$name];
             $host = $server['host'];
+            
             if (isset($server['user'])) {
                 $user = $server['user'];
                 if (isset($server['password'])) {
@@ -107,17 +112,18 @@ class EduardoledoServerSyncUploadCommand extends ContainerAwareCommand
                 }
                 $host = "{$user}@{$host}";
             }
+            
             if (isset($server["exclude"])) {
-                array_walk($server["exclude"], function($item) use (&$rsyncOptions) {
-                    $rsyncOptions[] = "--exclude={$item}";
+                array_walk($server["exclude"], function($item) {
+                    $this->rsyncOptions[] = "--exclude={$item}";
                 });
             }
             if (isset($server["exclude-from"])) {
-                array_walk($server["exclude-from"], function($item) use (&$rsyncOptions) {
-                    $rsyncOptions[] = "--exclude-from={$item}";
+                array_walk($server["exclude-from"], function($item) {
+                    $this->rsyncOptions[] = "--exclude-from={$item}";
                 });
             }
-            $options = implode(" ", $rsyncOptions);
+            $options = implode(" ", $this->rsyncOptions);
 
             $command = "{$rsync} -azvr {$options} {$host}:{$server['destination_dir']}";
             $output->writeln("Uploading to <info>{$name}</info>: <info>{$command}</info>");
