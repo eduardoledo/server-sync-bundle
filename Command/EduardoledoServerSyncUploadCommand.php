@@ -134,6 +134,7 @@ class EduardoledoServerSyncUploadCommand extends ContainerAwareCommand
                     $output->writeln(trim("<info>{$buffer}</info>"));
                 }
             });
+            $process->setTimeout(null);
             $process->wait();
         }
     }
