@@ -24,7 +24,7 @@ class EduardoledoServerSyncUploadCommand extends ContainerAwareCommand
                 ->setDescription('sync files to selected servers')
                 ->addOption('server', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Server name to sync')
                 ->addOption('exclude', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'rsync option')
-                ->addOption('exclude-from', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'rsync option')
+                ->addOption('exclude-from', null, InputOption::VALUE_REQUIRED, 'rsync option')
                 ->addOption('dry-run', null, InputOption::VALUE_NONE, 'rsync option')
         ;
     }
@@ -41,9 +41,9 @@ class EduardoledoServerSyncUploadCommand extends ContainerAwareCommand
         });
 
         $excludeFrom = $input->getOption("exclude-from");
-        array_walk($excludeFrom, function($item) {
-            $this->rsyncOptions[] = "--exclude-from={$item}";
-        });
+        if (strlen(trim($excludeFrom)) > 0) {
+            $this->rsyncOptions[] = "--exclude-from={$excludeFrom}";
+        }
 
         // Get servers config
         $this->servers = $this->getContainer()->getParameter("eduardoledo.server_sync.servers");
@@ -80,7 +80,7 @@ class EduardoledoServerSyncUploadCommand extends ContainerAwareCommand
 
         // Check rsync
         $process = new Process('which rsync');
-        $process->run(function ($type, $buffer)  {
+        $process->run(function ($type, $buffer) {
             if (strlen(trim($buffer)) > 0) {
                 $this->rsync = trim($buffer);
             }
@@ -112,16 +112,14 @@ class EduardoledoServerSyncUploadCommand extends ContainerAwareCommand
                 }
                 $host = "{$user}@{$host}";
             }
-            
+
             if (isset($server["exclude"])) {
                 array_walk($server["exclude"], function($item) {
                     $this->rsyncOptions[] = "--exclude={$item}";
                 });
             }
-            if (isset($server["exclude-from"])) {
-                array_walk($server["exclude-from"], function($item) {
-                    $this->rsyncOptions[] = "--exclude-from={$item}";
-                });
+            if (isset($server["exclude_from"])) {
+                $this->rsyncOptions[] = "--exclude-from={$server["exclude_from"]}";
             }
             $options = implode(" ", $this->rsyncOptions);
 
