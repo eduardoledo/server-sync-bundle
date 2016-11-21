@@ -15,6 +15,7 @@ class EduardoledoServerSyncUploadCommand extends ContainerAwareCommand
     protected $rsyncOptions = [];
     protected $servers = [];
     protected $optServers = [];
+    protected $rsync = null;
 
     protected function configure()
     {
@@ -78,15 +79,14 @@ class EduardoledoServerSyncUploadCommand extends ContainerAwareCommand
         }
 
         // Check rsync
-        $rsync = null;
         $process = new Process('which rsync');
-        $process->run(function ($type, $buffer) use (&$rsync) {
+        $process->run(function ($type, $buffer)  {
             if (strlen(trim($buffer)) > 0) {
-                $rsync = trim($buffer);
+                $this->rsync = trim($buffer);
             }
         });
 
-        if (is_null($rsync)) {
+        if (is_null($this->rsync)) {
             $output->writeln([
                 "<error>                  </error>",
                 '<error> Rsync not found. </error>',
@@ -98,7 +98,7 @@ class EduardoledoServerSyncUploadCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $output->writeln("Rsync found: <info>{$rsync}</info>", OutputInterface::VERBOSITY_DEBUG);
+        $output->writeln("Rsync found: <info>{$this->rsync}</info>", OutputInterface::VERBOSITY_DEBUG);
 
         foreach ($this->optServers as $name) {
             $options = "";
@@ -125,7 +125,7 @@ class EduardoledoServerSyncUploadCommand extends ContainerAwareCommand
             }
             $options = implode(" ", $this->rsyncOptions);
 
-            $command = "{$rsync} -azvr {$options} {$host}:{$server['destination_dir']}";
+            $command = "{$this->rsync} -azvr {$options} . {$host}:{$server['destination_dir']}";
             $output->writeln("Uploading to <info>{$name}</info>: <info>{$command}</info>");
             $process = new Process($command);
             $process->run(function ($type, $buffer) use ($output) {
